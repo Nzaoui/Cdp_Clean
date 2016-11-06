@@ -8,7 +8,7 @@
 $MYSQL_HOST = "localhost";
 $MYSQL_USER = "root";
 $MYSQL_PASSWD = "";
-$MYSQL_DATABASE = "gestiondeprojet";
+$MYSQL_DATABASE = "GestionDeProjet";
 
 //Return a mysql connection
 function connect (){
@@ -32,6 +32,18 @@ function check_user_informations ($mysql,$login,$passwd){
 	$stmt = $mysql->prepare($rqt);
 	$hash_passwd = hash("sha256", $passwd);
 	$stmt->bind_param("ss", $login,$hash_passwd);
+	$stmt->execute();
+	$result = $stmt->get_result();
+	$stmt->close();
+	return $result;
+}
+
+/*Return the user corresponding with id */
+function get_user_from_login ($mysql,$login){
+	$rqt = "SELECT id,first_name,last_name,login,email FROM User WHERE login=? ;";
+	$stmt = $mysql->stmt_init();
+	$stmt = $mysql->prepare($rqt);
+	$stmt->bind_param("s", $login);
 	$stmt->execute();
 	$result = $stmt->get_result();
 	$stmt->close();
@@ -122,8 +134,8 @@ function get_project($mysql, $id_project){
 	Insert into table, a new project following the arguments
 	=> Return True if the project is stored
 */
-function add_project($mysql,$name,$description,$laguage,$owner){
-	$rqt = "INSERT INTO Project(name,description,laguage,owner) VALUES(?,?,?,?);";
+function add_project($mysql,$name,$description,$language,$owner){
+	$rqt = "INSERT INTO Project(name,description,language,owner) VALUES(?,?,?,?);";
 	$stmt = $mysql->stmt_init();
 	$stmt = $mysql->prepare($rqt);
 	$stmt->bind_param("sssi", $name,$description,$language,$owner);

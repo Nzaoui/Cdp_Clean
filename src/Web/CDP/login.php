@@ -1,3 +1,8 @@
+<?php
+
+session_start();
+
+?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -36,6 +41,7 @@
       <div class="left_nav_slidebar">
         <ul>
           <li><a href="index.html"><i class="fa fa-home"></i> Acceuil <span class="left_nav_pointer"></span>  </a></li>
+		  <li> <a href="projects.php"> <i class="fa fa-tasks"></i> Tout les Projets </a></li>
           <li> <a href="inscription.php"> <i class="fa fa-edit"></i> S'inscrire </a></li> 
           <li class="left_nav_active theme_border"> <a href="login.php"> <i class="fa fa-tasks"></i> S'authentifier </a></li>
         </ul>
@@ -57,7 +63,7 @@
        <section class="panel default blue_title h2">
        <div class="panel-body">
 		  <div class="login_content">
-		 <form role="form" class="form-horizontal" action="login.php" method="Post">
+		 <form role="form" class="form-horizontal" action="login_check.php" method="Post">
 			  <div class="form-group">
 				
 				<div class="col-sm-10">
@@ -75,15 +81,13 @@
 				  <div class="checkbox checkbox_margin">
 					<label class="lable_margin">
 					  <input type="checkbox"><p class="pull-left"> Remember me</p></label>
-					  <a href="index.html">
+	
 					  <button class="btn btn-default pull-right" type="submit" name="submit">Se connecter</button>
-					  </a></div>
+					  </div>
 					   
 				</div>
 				<br>
-					  <?php 
-						include("login_check.php"); 
-						?>
+				
 			  </div>
 			  
 			</form>
