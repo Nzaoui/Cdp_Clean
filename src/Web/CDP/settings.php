@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start ();
 include("database.php");
 if( !$_GET["id"] ) {
@@ -29,6 +29,10 @@ else{
     <link href="css/animate.css" rel="stylesheet" type="text/css" />
     <link href="css/admin.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/r/bs-3.3.5/jq-2.1.4,dt-1.10.8/datatables.min.css"/>
+	<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script> -->
+	<style>
+      textarea { resize: vertical; }
+	</style>
   </head>
   <body class="light_theme  fixed_header left_nav_fixed">
     <div class="wrapper">
@@ -115,94 +119,70 @@ else{
            <section class="panel default blue_title h2">
              <div class="panel-body">
                <div class="container">
-                 <div class = "panel panel-default">
-                   <div class = "panel-heading">
-                    <h3 class = "panel-title">Description</h3>
-                  </div>
-                  <?php
-                  printf("<div class = \"panel-body\">%s</div>",$project["description"]);
-                  ?>
-                </div>
-                <div class = "panel panel-default">
-                 <div class = "panel-heading">
-                  <h3 class = "panel-title">Participants</h3>
-                </div>
-                <div class = "panel-body">
-                  <table class="table table-striped table-bordered" id="projects">
-                    <thead>
-                      <tr>
-                        <th class="col-md-2">Pseudo</th>
-                        <th>Nom - Prénom</th>
-                        <th class="col-md-3">e-mail</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                     <?php
-                     $developers = get_developers($mysql,$_GET["id"]);
-                     while ($row = $developers->fetch_array(MYSQLI_ASSOC)){
-                      printf("<tr>");
-                      printf ("<td data-title=\"Pseudo\">%s</td>",$row["login"]);
-                      printf ("<td data-title=\"Nom\">%s %s <a href=\"myprofil.php?id=%d\">(Consulter le profil)</a></td>",$row["last_name"],$row["first_name"],$row["id"]);
-                      printf ("<td data-title=\"e-mail\">%s</td>",$row["email"]);
-                      printf("</tr>");
-                    }
-                    $developers->free();
-                    ?>
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                   <div class="container clear_both padding_fix">
+					<!--\\\\\\\ container  start \\\\\\-->
+					<ul class="nav nav-tabs" id="myTab">
+					  <li class="active"><a data-toggle="tab" href="#user">AddUser</a></li>
+					  <li class=""><a data-toggle="tab" href="#sprints">Sprints</a></li>
+					  <li class=""><a data-toggle="tab" href="#us">User Story</a></li>
+					</ul>
+					<div class="tab-content" id="myTabContent">
+						<div id="user" class="tab-pane fade active in">
+							<div class="form-group">
+							  <br><br><label class="col-sm-2 control-label">Ajout User par login</label>
+							  <div class="col-sm-3">
+								<input type="text" class="form-control">
+							  </div>
+							  <button type="submit" class="btn btn-primary">Valider</button>
+							</div><!--/form-group--> 
+						</div>
+						<div id="sprints" class="tab-pane fade">
+							<?php include("sprints.php"); ?>
+						</div>
+						<div id="us" class="tab-pane fade">
+							<?php include("userStory.php"); ?>
+						</div>
+					
+					</div>
+				</div>
 
-          </div>
-
-        </div>
-      </section>
-    </div>
-
-
-  </div>
-  <!--\\\\\\\ container  end \\\\\\-->
-</div>
-<!--\\\\\\\ content panel end \\\\\\-->
+			</div>
+			<!--\\\\\\\ container  end \\\\\\-->
+			</div>
+			<!--\\\\\\\ content panel end \\\\\\-->
+			</section>
 </div>
 <!--\\\\\\\ inner end\\\\\\-->
 </div>
 <!--\\\\\\\ wrapper end\\\\\\-->
-<!-- Modal -->
+
+<!-- The Modals -->
+<?php include("modals.php"); ?>
+
+
+
 <script type="text/javascript" src="https://cdn.datatables.net/r/bs-3.3.5/jqc-1.11.3,dt-1.10.8/datatables.min.js"></script>
-<script type="text/javascript">
-  $(document).ready(function() {
-    $('#projects').DataTable({
-      "language": {        
-        "sProcessing":     "Traitement en cours...",
-        "sSearch":         "Rechercher&nbsp;:",
-        "sLengthMenu":     "Afficher _MENU_ &eacute;l&eacute;ments",
-        "sInfo":           "Affichage de l'&eacute;l&eacute;ment _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
-        "sInfoEmpty":      "Affichage de l'&eacute;l&eacute;ment 0 &agrave; 0 sur 0 &eacute;l&eacute;ment",
-        "sInfoFiltered":   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
-        "sInfoPostFix":    "",
-        "sLoadingRecords": "Chargement en cours...",
-        "sZeroRecords":    "Aucun &eacute;l&eacute;ment &agrave; afficher",
-        "sEmptyTable":     "Aucune donn&eacute;e disponible dans le tableau",
-        "oPaginate": {
-          "sFirst":      "Premier",
-          "sPrevious":   "Pr&eacute;c&eacute;dent",
-          "sNext":       "Suivant",
-          "sLast":       "Dernier"
-        },
-        "oAria": {
-          "sSortAscending":  ": activer pour trier la colonne par ordre croissant",
-          "sSortDescending": ": activer pour trier la colonne par ordre d&eacute;croissant"
-        }
-      }   
-    });
-  });
-</script>
-<script src="js/bootstrap.min.js"></script>
+
 <script src="js/common-script.js"></script>
 <script src="js/jquery.slimscroll.min.js"></script>
 <script src="js/jPushMenu.js"></script> 
 <script src="js/side-chats.js"></script>
 
+<script>
+$('#UpdateUSModal').on('show.bs.modal', function (event) {
+	var button = $(event.relatedTarget) //Getting the Button that launched the event
+	var description = button.data('description') // Getting data from data-* attributes on the button
+	var id_UserStory = button.data('id')
+	var priority = button.data('priority')
+	var achievement = button.data('achievement')
+	var commit = button.data('commit')
+	var modal = $(this)
+	modal.find('.modal-body #update_description').val(description) //Setting the values to the values that has been sent
+	modal.find('.modal-body #update_id').val(id_UserStory)
+	modal.find('.modal-body #update_priority').val(priority)
+	modal.find('.modal-body #update_achievement').val(achievement)
+	modal.find('.modal-body #update_commit').val(commit)
+})
+</script>
 </body>
 </html>
