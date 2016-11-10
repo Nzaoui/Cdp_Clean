@@ -131,9 +131,46 @@ else{
 							<div class="form-group">
 							  <br><br><label class="col-sm-2 control-label">Ajout User par login</label>
 							  <div class="col-sm-3">
-								<input type="text" class="form-control">
+							   <form action="#" method="post" enctype="multipart/form-data">
+								<select class="selectpicker" data-style="btn-inverse" name="name">
+							    
+												  <?php
+                                                  
+												  $mysql = connect();
+												  $result = get_all_user($mysql); 
+												  while ($row = $result->fetch_array(MYSQLI_ASSOC)) { 
+
+													$id=$row["id"];   
+													$thing=$row["login"];   
+
+													  echo "<OPTION VALUE=$id>$thing</option>";
+													} 
+												  ?>
+												
+                                                </select>
+												
 							  </div>
-							  <button type="submit" class="btn btn-primary">Valider</button>
+							  <button type="submit" class="btn btn-primary" name ="submit" value ="submit">Ajouter</button>
+							  </form>
+							  <?php 
+							  if((isset($_POST['submit']))){
+							  $name = $_POST["name"];
+							  $project = $project["id"];
+							  
+							  $mysql = connect();
+							  $result = add_user_to_project($mysql,$name,$project); 
+							  	if($result == true){
+											echo "<div class=\"alert alert-success\">";
+											echo "<strong>Ajout avec Succes!</strong>";
+											echo "</div>";
+										}
+										else{
+											echo "<div class=\"alert alert-danger\">";
+											echo "<strong>Echec d'ajout!</strong>";
+											echo "</div>";
+										}
+							  }
+							  ?>
 							</div><!--/form-group--> 
 						</div>
 						<div id="sprints" class="tab-pane fade">
@@ -182,6 +219,34 @@ $('#UpdateUSModal').on('show.bs.modal', function (event) {
 	modal.find('.modal-body #update_priority').val(priority)
 	modal.find('.modal-body #update_achievement').val(achievement)
 	modal.find('.modal-body #update_commit').val(commit)
+})
+$('#DeleteUSModal').on('show.bs.modal', function (event) {
+	var button = $(event.relatedTarget)
+	var id_UserStory = button.data('id')
+	var description = button.data('description')
+	var modal = $(this)
+	modal.find('.modal-body #delete_id').val(id_UserStory)
+	modal.find('.modal-body #delete_description').val(description)
+})
+$('#UpdateSprintModal').on('show.bs.modal', function (event) {
+	var button = $(event.relatedTarget)
+	var id_Sprint = button.data('id')
+	var start = button.data('start')
+	var end = button.data('end')
+	var modal = $(this)
+	modal.find('.modal-body #update_id').val(id_Sprint)
+	modal.find('.modal-body #update_start_Sprint').val(start)
+	modal.find('.modal-body #update_end_Sprint').val(end)
+})
+$('#DeleteSprintModal').on('show.bs.modal', function (event) {
+	var button = $(event.relatedTarget)
+	var id_Sprint = button.data('id')
+	var start = button.data('start')
+	var end = button.data('end')
+	var modal = $(this)
+	modal.find('.modal-body #delete_numSprint').val(id_Sprint)
+	modal.find('.modal-body #delete_start_Sprint').val(start)
+	modal.find('.modal-body #delete_end_Sprint').val(end)
 })
 </script>
 </body>
