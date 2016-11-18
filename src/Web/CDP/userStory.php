@@ -4,48 +4,61 @@
 									if((!empty($_POST["add_description"]))&&(!empty($_POST["add_priority"]))){
 										$description = $_POST["add_description"];
 										$priority = $_POST["add_priority"];
+										$difficulty = $_POST["add_difficulty"];
+										$id_sprint = $_POST["add_sprint"];
 										$id_project = $project["id"];
-										$check_addResult = add_us($mysql, $id_project, $description, $priority);
+										$check_addResult = add_us($mysql, $id_project, $id_sprint, $description, $priority, $difficulty);
 										if($check_addResult == true){
 											echo "<div class=\"alert alert-success\">";
 											echo "<strong>Ajout avec Succes!</strong>";
+											echo '<META HTTP-EQUIV="Refresh" Content="0; URL=settings.php?id='.$_GET["id"].'#us">';
 											echo "</div>";
 										}
 										else{
 											echo "<div class=\"alert alert-danger\">";
 											echo "<strong>Echec d'ajout!</strong>";
+											echo '<META HTTP-EQUIV="Refresh" Content="0; URL=settings.php?id='.$_GET["id"].'#us">';
 											echo "</div>";
 										}
 									}
 									else{
 										echo "<div class=\"alert alert-warning\">";
 										echo "<strong>Echec d'ajout! Tentative d'ajout d'un Element sans Description ou sans Priorite</strong>";
+										echo '<META HTTP-EQUIV="Refresh" Content="0; URL=settings.php?id='.$_GET["id"].'#us">';
 										echo "</div>";
 									}
 								}
 								if(isset($_POST["modale_updateUS_submit"])){
-									if((!empty($_POST["update_description"]))&&(!empty($_POST["update_priority"]))){
+									if((!empty($_POST["update_description"]))&&(!empty($_POST["update_priority"]))&&(!empty($_POST["update_difficulty"]))){
 										$id_US = $_POST["update_id"];
 										$description = $_POST["update_description"];
 										$priority = $_POST["update_priority"];
-										$achievement = $_POST["update_achievement"];
+										$difficulty = $_POST["update_difficulty"];
+										$id_sprint = $_POST["update_sprint"];
 										$commit = $_POST["update_commit"];
+										$achievement = $_POST["update_achievement"];
+										if($achievement ==  ""){
+											$achievement = null;
+										}
 										$id_project = $project["id"];
-										$check_updateResult = alter_us($mysql, $id_US, $id_project, $description, $priority, $achievement, $commit);
+										$check_updateResult = alter_us($mysql, $id_US, $id_project, $id_sprint, $description, $priority, $difficulty, $achievement, $commit);
 										if($check_updateResult == true){
 											echo "<div class=\"alert alert-success\">";
 											echo "<strong>Mofication avec Succes!</strong>";
+											echo '<META HTTP-EQUIV="Refresh" Content="0; URL=settings.php?id='.$_GET["id"].'#us">';
 											echo "</div>";
 										}
 										else{
 											echo "<div class=\"alert alert-danger\">";
 											echo "<strong>Echec de Modification!</strong>";
+											echo '<META HTTP-EQUIV="Refresh" Content="0; URL=settings.php?id='.$_GET["id"].'#us">';
 											echo "</div>";
 										}
 									}
 									else{
 										echo "<div class=\"alert alert-warning\">";
-										echo "<strong>Echec de Modification! Tentative de Supprimer la Description ou la Priorite</strong>";
+										echo "<strong>Echec de Modification! Tentative de Supprimer la Description, la Priorite ou la Difficulte</strong>";
+										echo '<META HTTP-EQUIV="Refresh" Content="0; URL=settings.php?id='.$_GET["id"].'#us">';
 										echo "</div>";
 									}
 								}
@@ -55,11 +68,13 @@
 									if($check_deleteResult == true){
 											echo "<div class=\"alert alert-success\">";
 											echo "<strong>Suppression avec Succes!</strong>";
+											echo '<META HTTP-EQUIV="Refresh" Content="0; URL=settings.php?id='.$_GET["id"].'#us">';
 											echo "</div>";
 										}
 										else{
 											echo "<div class=\"alert alert-danger\">";
 											echo "<strong>Echec de Suppression!</strong>";
+											echo '<META HTTP-EQUIV="Refresh" Content="0; URL=settings.php?id='.$_GET["id"].'#us">';
 											echo "</div>";
 										}
 								}
@@ -81,7 +96,8 @@
 														printf("<tr>");
 														printf("<td data-title=\"Description\">%s</td>",$row['description']);
 														printf("<td data-title=\"Action\">");
-														printf("<button type=\"button\" class=\"btn btn-info\" data-toggle=\"modal\" data-target=\"#UpdateUSModal\" data-id=\"%d\" data-description=\"%s\" data-priority=\"%d\" data-achievement=\"%s\" data-commit=\"%s\">Modifier</button>",$row['id'],$row['description'],$row['priority'],$row['achievement'],$row['commit']);
+														printf("<button type=\"button\" class=\"btn btn-info\" data-toggle=\"modal\" data-target=\"#UpdateUSModal\""); 
+														printf("data-id=\"%d\" data-description=\"%s\" data-priority=\"%d\" data-difficulty=\"%d\" data-sprint=\"%d\" data-achievement=\"%s\" data-commit=\"%s\">Modifier</button>",$row['id'],$row['description'],$row['priority'],$row['difficulty'],$row['id_sprint'],$row['achievement'],$row['commit']);
 														printf("&emsp;");
 														printf("<button type=\"button\" class=\"btn btn-info\" data-toggle=\"modal\" data-target=\"#DeleteUSModal\" data-id=\"%d\" data-description=\"%s\">Supprimer</button>",$row['id'],$row['description']);
 														printf("</td>");

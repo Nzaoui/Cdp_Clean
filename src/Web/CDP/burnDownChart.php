@@ -21,7 +21,7 @@ else{
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <title>Backlog Projet</title>
+  <title>BurnDown Chart Projet</title>
   <META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">
     <link href="css/font-awesome.css" rel="stylesheet" type="text/css" />
     <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css" />
@@ -54,7 +54,7 @@ else{
                 printf("<li> <a href=\"logout.php\"> <i class=\"fa fa-power-off\"></i> Se déconnecter </a></li>");
               }
               else{
-			    printf("<li class=\"left_nav_active theme_border\"> <a href='index.php'> <i class='fa fa-home'></i> Acceuil </a></li>");
+          printf("<li class=\"left_nav_active theme_border\"> <a href='index.php'> <i class='fa fa-home'></i> Acceuil </a></li>");
                 printf("<li > <a href='projects.php'> <i class='fa fa-tasks'></i> Tout les Projets </a></li>");
                 printf("<li> <a href=\"inscription.php\"> <i class=\"fa fa-edit\"></i> S'inscrire </a></li>");
                 printf("<li> <a href=\"login.php\"> <i class=\"fa fa-tasks\"></i> S'authentifier </a></li>");
@@ -67,7 +67,7 @@ else{
           <div class="row center">
            <div class="col-lg-12 ">
              <section class="panel default blue_title h2">
-               <div class="panel-heading border">BackLog</div>
+               <div class="panel-heading border">BurnDown Chart</div>
              </section>
            </div>
          </div>
@@ -99,79 +99,83 @@ else{
            <section class="panel default blue_title h2">
             <div class="panel-body">
              <div class="container">
-              <table class="table table-striped table-bordered" id="backlog">
-                <thead>
-                  <tr>
-                  <th class="col-md-1">id</th>
-                    <th class="col-md-3">Description</th>
-                    <th class="col-md-1">Priorité</th>
-                    <th class="col-md-1">Difficulté</th>
-                    <th class="col-md-1">Sprint</th>
-                    <th class="col-md-1">Commit</th>
-                  </tr>
-                </thead>
-                <tbody>
-
-                  <?php
-                  $us = get_us($mysql,$project["id"]);
-                  $num = 1;
-                  while ($row = $us->fetch_array(MYSQLI_ASSOC)){
-                    printf("<tr>");
-                    printf("<td data-title=\"id\">%s</td>",$num++);
-                    printf("<td data-title=\"Description\">%s</td>",$row["description"]);
-                    printf("<td data-title=\"Priorité\">%s</td>",$row["priority"]);
-                    printf("<td data-title=\"Difficulté\">%s</td>",$row["difficulty"]);
-                    printf("<td data-title=\"Sprint\">%s</td>",$row["id_sprint"]);
-                    printf("<td data-title=\"commit\">%s</td>",$row["commit"]);
-                    printf("</tr>");
-                  }
-                  close($mysql);
-                  ?>
-
-                </tbody>
-              </table>
+             <canvas id="graph"></canvas>
             </div>
-
           </div>
         </section>
       </div>
-
-
     </div>
   </div>
 </div>
 </div>
-
-<script type="text/javascript" src="https://cdn.datatables.net/r/bs-3.3.5/jqc-1.11.3,dt-1.10.8/datatables.min.js"></script>
-<script type="text/javascript">
-  $(document).ready(function() {
-    $('#backlog').DataTable({
-      "language": {        
-        "sProcessing":     "Traitement en cours...",
-        "sSearch":         "Rechercher&nbsp;:",
-        "sLengthMenu":     "Afficher _MENU_ &eacute;l&eacute;ments",
-        "sInfo":           "Affichage de l'&eacute;l&eacute;ment _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
-        "sInfoEmpty":      "Affichage de l'&eacute;l&eacute;ment 0 &agrave; 0 sur 0 &eacute;l&eacute;ment",
-        "sInfoFiltered":   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
-        "sInfoPostFix":    "",
-        "sLoadingRecords": "Chargement en cours...",
-        "sZeroRecords":    "Aucun &eacute;l&eacute;ment &agrave; afficher",
-        "sEmptyTable":     "Aucune donn&eacute;e disponible dans le tableau",
-        "oPaginate": {
-          "sFirst":      "Premier",
-          "sPrevious":   "Pr&eacute;c&eacute;dent",
-          "sNext":       "Suivant",
-          "sLast":       "Dernier"
-        },
-        "oAria": {
-          "sSortAscending":  ": activer pour trier la colonne par ordre croissant",
-          "sSortDescending": ": activer pour trier la colonne par ordre d&eacute;croissant"
-        }
-      }   
-    });
-  });
-</script>
+<script src="js/jquery-2.1.0.js"></script>
 <script src="js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.bundle.min.js"></script>
+<script type="text/javascript">
+<?php
+  $stories = get_us($mysql,$project["id"]);
+  $sprints = get_sprints($mysql,$project["id"]);
+  $sprints_end_dates = "var sprints_end_dates = [";
+  $sprint = $sprints->fetch_array(MYSQLI_ASSOC);
+  $project_difficulty = get_project_difficulty($mysql,$project["id"]);
+  $tmp = $project_difficulty;
+  $charge_estimee = "var charge_estimee = [project_difficulty";
+  if ($sprint != null)
+    $sprints_end_dates.="\"".$sprint["start_date"]."\",";
+  while ($sprint != NULL){
+    $sprints_end_dates.="\"".$sprint["end_date"]."\"";
+    $sprint_difficulty = get_sprint_difficulty($mysql,$sprint["id"]);
+    $charge_estimee.=",".($tmp-$sprint_difficulty);
+    $sprint = $sprints->fetch_array(MYSQLI_ASSOC);
+    $tmp -= $sprint_difficulty;
+    if($sprint != NULL){
+      $sprints_end_dates.=",";
+    }
+  }
+  $sprints_end_dates.="];";
+  printf($sprints_end_dates."\n");
+  printf("var project_difficulty = %d ;\n",$project_difficulty);
+  printf("%s];\n",$charge_estimee);
+?>
+var ctx = document.getElementById("graph");
+var myChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: sprints_end_dates,
+        datasets: [{
+            label: "charge estimée",
+            data: charge_estimee,
+            backgroundColor: [
+                'rgba(44, 217, 44, 0)'
+            ],
+            borderColor: [
+                'rgba(44, 217, 44, 0.5)'
+            ],
+            borderWidth: 2
+        },{
+            label: "charge réelle",
+            data: [project_difficulty],
+            backgroundColor: [
+                'rgba(255,99,132,0)'
+            ],
+            borderColor: [
+                'rgba(255,99,132,1)'
+            ],
+            borderWidth: 2
+        }]
+    },
+    options: {
+        scales:{
+            yAxes: [{
+                ticks: {
+                    beginAtZero:true
+                }
+            }]
+        }
+    }
+});
+</script>
 <script src="js/common-script.js"></script>
 <script src="js/jquery.slimscroll.min.js"></script>
 <script src="js/jPushMenu.js"></script> 

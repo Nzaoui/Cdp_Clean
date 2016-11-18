@@ -21,7 +21,7 @@ else{
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <title>Backlog Projet</title>
+  <title>KanBan Projet</title>
   <META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">
     <link href="css/font-awesome.css" rel="stylesheet" type="text/css" />
     <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css" />
@@ -67,7 +67,7 @@ else{
           <div class="row center">
            <div class="col-lg-12 ">
              <section class="panel default blue_title h2">
-               <div class="panel-heading border">BackLog</div>
+               <div class="panel-heading border">KanBan</div>
              </section>
            </div>
          </div>
@@ -99,37 +99,42 @@ else{
            <section class="panel default blue_title h2">
             <div class="panel-body">
              <div class="container">
-              <table class="table table-striped table-bordered" id="backlog">
-                <thead>
-                  <tr>
-                  <th class="col-md-1">id</th>
-                    <th class="col-md-3">Description</th>
-                    <th class="col-md-1">Priorité</th>
-                    <th class="col-md-1">Difficulté</th>
-                    <th class="col-md-1">Sprint</th>
-                    <th class="col-md-1">Commit</th>
-                  </tr>
-                </thead>
-                <tbody>
-
-                  <?php
-                  $us = get_us($mysql,$project["id"]);
-                  $num = 1;
-                  while ($row = $us->fetch_array(MYSQLI_ASSOC)){
+              <?php
+                $sprints = get_currents_sprints($mysql,$project["id"]);
+                $cols = ["To-Do","On Going","Test","Done"];
+                $user_valid = isset($_SESSION['id']) && check_user_work_on_project($mysql,$_SESSION['id'],$project["id"]);
+                while ($sprint = $sprints->fetch_array(MYSQLI_ASSOC)){
+                  $tasks = get_tasks($mysql,$sprint["id"]);
+                  printf("<div class = \"panel panel-default\">
+                            <div class = \"panel-heading\">
+                              <h3 class = \"panel-title\">%s / %s</h3>
+                          </div>",$sprint["start_date"],$sprint["end_date"]);
+                  printf("<div class = \"panel-body\">");
+                  printf("<div class=\"table-bordered\">
+                            <table id=\"tableDnD\" class=\"table table-bordered\">
+                              <thread>
+                                <tr>
+                                  <th>To-Do</th>
+                                  <th>On Going</th>
+                                  <th>Test</th>
+                                  <th>Done</th>
+                                </tr>
+                              </thread>
+                              <tbody>");
+                  while ($task = $tasks->fetch_array(MYSQLI_ASSOC)){
                     printf("<tr>");
-                    printf("<td data-title=\"id\">%s</td>",$num++);
-                    printf("<td data-title=\"Description\">%s</td>",$row["description"]);
-                    printf("<td data-title=\"Priorité\">%s</td>",$row["priority"]);
-                    printf("<td data-title=\"Difficulté\">%s</td>",$row["difficulty"]);
-                    printf("<td data-title=\"Sprint\">%s</td>",$row["id_sprint"]);
-                    printf("<td data-title=\"commit\">%s</td>",$row["commit"]);
+                    foreach ($cols as $col){
+                      $div = "<div id=\"".$task["id"]."\"".(($user_valid)?" ondragstart=\"drag(event)\" draggable=\"true\">":">").$task["description"]."</div>";
+                      if ($col == $task["state"])
+                        printf("<th id=\"div1\" ondrop=\"drop(event)\" ondragover=\"allowDrop(event)\">%s</th>",$div);
+                      else
+                        printf("<th id=\"div1\" ondrop=\"drop(event)\" ondragover=\"allowDrop(event)\"></th>");
+                    }
                     printf("</tr>");
                   }
-                  close($mysql);
-                  ?>
-
-                </tbody>
-              </table>
+                  printf("</tbody></table></div></div></div></div>");
+                }
+              ?>
             </div>
 
           </div>
@@ -141,36 +146,24 @@ else{
   </div>
 </div>
 </div>
+<?php if ($user_valid) { ?>
+<script>
+function allowDrop(ev) {
+    ev.preventDefault();
+}
 
-<script type="text/javascript" src="https://cdn.datatables.net/r/bs-3.3.5/jqc-1.11.3,dt-1.10.8/datatables.min.js"></script>
-<script type="text/javascript">
-  $(document).ready(function() {
-    $('#backlog').DataTable({
-      "language": {        
-        "sProcessing":     "Traitement en cours...",
-        "sSearch":         "Rechercher&nbsp;:",
-        "sLengthMenu":     "Afficher _MENU_ &eacute;l&eacute;ments",
-        "sInfo":           "Affichage de l'&eacute;l&eacute;ment _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
-        "sInfoEmpty":      "Affichage de l'&eacute;l&eacute;ment 0 &agrave; 0 sur 0 &eacute;l&eacute;ment",
-        "sInfoFiltered":   "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
-        "sInfoPostFix":    "",
-        "sLoadingRecords": "Chargement en cours...",
-        "sZeroRecords":    "Aucun &eacute;l&eacute;ment &agrave; afficher",
-        "sEmptyTable":     "Aucune donn&eacute;e disponible dans le tableau",
-        "oPaginate": {
-          "sFirst":      "Premier",
-          "sPrevious":   "Pr&eacute;c&eacute;dent",
-          "sNext":       "Suivant",
-          "sLast":       "Dernier"
-        },
-        "oAria": {
-          "sSortAscending":  ": activer pour trier la colonne par ordre croissant",
-          "sSortDescending": ": activer pour trier la colonne par ordre d&eacute;croissant"
-        }
-      }   
-    });
-  });
+function drag(ev) {
+    ev.dataTransfer.setData("text/html", ev.target.id);
+}
+
+function drop(ev) {
+    ev.preventDefault();
+    var data = ev.dataTransfer.getData("text/html");
+    ev.target.appendChild(document.getElementById(data));
+}
 </script>
+<?php } ?>
+<script src="js/jquery-2.1.0.js"></script>
 <script src="js/bootstrap.min.js"></script>
 <script src="js/common-script.js"></script>
 <script src="js/jquery.slimscroll.min.js"></script>
