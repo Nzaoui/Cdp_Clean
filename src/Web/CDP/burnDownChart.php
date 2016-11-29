@@ -16,6 +16,74 @@ else{
    $project = $project->fetch_array(MYSQLI_ASSOC);
  }
 }
+
+function php_array_to_js_array($array){
+  $result = "[";
+  $count = count($array);
+  $i = 0;
+  for (;$i < $count-1; $i++) {
+    $result.="\"".$array[$i]."\",";
+  }
+  $result.="\"".$array[$i]."\"]";
+  return $result;
+}
+
+function compute_estimated_sprints_difficulty(){
+  global $mysql,$project;
+  $sprints = get_sprints($mysql,$project["id"]);
+  $graph = [];
+  $graph["labels"] = [];
+  $graph["data"] = [];
+  $project_difficulty = get_project_difficulty($mysql,$project["id"]);
+  $sprint_difficulty = $project_difficulty;
+  $sprint = $sprints->fetch_array(MYSQLI_ASSOC);
+  array_push($graph["labels"],$sprint["start_date"]);
+  array_push($graph["data"],$project_difficulty);
+
+  do{
+    array_push($graph["labels"],$sprint["end_date"]);
+    $sprint_difficulty -= get_sprint_difficulty($mysql,$sprint["id"]);
+    array_push($graph["data"],$sprint_difficulty);
+  }while($sprint = $sprints->fetch_array(MYSQLI_ASSOC));
+
+  return $graph;
+}
+
+function compute_past_sprints_difficulty(){
+  global $mysql,$project;
+  $stories = get_us($mysql,$project["id"]);
+  $tab_stories = [];
+  while ($story = $stories->fetch_array(MYSQLI_ASSOC)){
+    $tab_stories[$story["id"]] = $story["difficulty"];
+  }
+  $sprints = get_past_sprints($mysql,$project["id"]);
+  $graph = [];
+  $graph["label"] = [];
+  $graph["data"] = [];
+  $project_difficulty = get_project_difficulty($mysql,$project["id"]);
+  $sprint_difficulty = $project_difficulty;
+  $sprint = $sprints->fetch_array(MYSQLI_ASSOC);
+  array_push($graph["label"],$sprint["start_date"]);
+  array_push($graph["data"],$project_difficulty);
+  do{
+    array_push($graph["label"],$sprint["end_date"]);
+    $tasks = get_tasks($mysql,$sprint["id"]);
+    $us_not_done = [];
+    while ($task = $tasks->fetch_array(MYSQLI_ASSOC)) {
+      if((strcmp($task["state"],"Done")!=0) && !in_array($task["id_us"], $us_not_done))
+        array_push($us_not_done, $task["id_us"]);
+    }
+    $sprint_difficulty -= get_sprint_difficulty($mysql,$sprint["id"]);
+    foreach ($us_not_done as $key => $value) {
+      printf("var a%d=%d;",$sprint["id"],count($us_not_done));
+      $sprint_difficulty+=$tab_stories[$value];
+    }
+    array_push($graph["data"],$sprint_difficulty);
+  }while($sprint = $sprints->fetch_array(MYSQLI_ASSOC));
+
+  return $graph;
+}
+
 ?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -28,6 +96,9 @@ else{
     <link href="css/animate.css" rel="stylesheet" type="text/css" />
     <link href="css/admin.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/r/bs-3.3.5/jq-2.1.4,dt-1.10.8/datatables.min.css"/>
+	<style>
+	.navbar-collapse a { color: #FB5C4A}
+	</style>
   </head>
   <body class="light_theme  fixed_header left_nav_fixed">
     <div class="wrapper">
@@ -71,7 +142,7 @@ else{
              </section>
            </div>
          </div>
-         <nav class="navbar navbar-inverse" role="navigation">
+        <nav class="navbar navbar-default" role="navigation">
           <div class="navbar-header">
             <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
               <span class="icon-bar"></span>
@@ -80,12 +151,12 @@ else{
             </button>
           </div>
           <div class="collapse navbar-collapse">
-            <ul class="nav nav-justified">
+            <ul class="nav nav-pills nav-justified">
               <?php
-              printf("<li class=\"active\"><a href=\"project.php?id=%d\">Accueil</a></li>",$project["id"]);
+              printf("<li><a href=\"project.php?id=%d\">Accueil</a></li>",$project["id"]);
               printf("<li><a href=\"backLog.php?id=%d\">BackLog</a></li>",$project["id"]);
               printf("<li><a href=\"kanBan.php?id=%d\">KanBan</a></li>",$project["id"]);
-              printf("<li><a href=\"burnDownChart.php?id=%d\">BurnDown Chart</a></li>",$project["id"]);
+              printf("<li  class=\"active\"><a href=\"burnDownChart.php?id=%d\">BurnDown Chart</a></li>",$project["id"]);
               printf("<li><a href=\"history.php?id=%d\">Historique</a></li>",$project["id"]);
               if(isset($_SESSION['id']) && check_user_work_on_project($mysql,$_SESSION['id'],$project["id"]))
                 printf("<li><a href=\"settings.php?id=%d\">Paramètres</a></li>",$project["id"]);
@@ -114,29 +185,11 @@ else{
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.bundle.min.js"></script>
 <script type="text/javascript">
 <?php
-  $stories = get_us($mysql,$project["id"]);
-  $sprints = get_sprints($mysql,$project["id"]);
-  $sprints_end_dates = "var sprints_end_dates = [";
-  $sprint = $sprints->fetch_array(MYSQLI_ASSOC);
-  $project_difficulty = get_project_difficulty($mysql,$project["id"]);
-  $tmp = $project_difficulty;
-  $charge_estimee = "var charge_estimee = [project_difficulty";
-  if ($sprint != null)
-    $sprints_end_dates.="\"".$sprint["start_date"]."\",";
-  while ($sprint != NULL){
-    $sprints_end_dates.="\"".$sprint["end_date"]."\"";
-    $sprint_difficulty = get_sprint_difficulty($mysql,$sprint["id"]);
-    $charge_estimee.=",".($tmp-$sprint_difficulty);
-    $sprint = $sprints->fetch_array(MYSQLI_ASSOC);
-    $tmp -= $sprint_difficulty;
-    if($sprint != NULL){
-      $sprints_end_dates.=",";
-    }
-  }
-  $sprints_end_dates.="];";
-  printf($sprints_end_dates."\n");
-  printf("var project_difficulty = %d ;\n",$project_difficulty);
-  printf("%s];\n",$charge_estimee);
+  $estimated = compute_estimated_sprints_difficulty();
+  $real = compute_past_sprints_difficulty();
+  printf("var sprints_end_dates = %s ;\n",php_array_to_js_array($estimated["labels"]));
+  printf("var charge_estimee = %s ;\n",php_array_to_js_array($estimated["data"]));
+  printf("var charge_real = %s ;\n",php_array_to_js_array($real["data"]));
 ?>
 var ctx = document.getElementById("graph");
 var myChart = new Chart(ctx, {
@@ -144,6 +197,7 @@ var myChart = new Chart(ctx, {
     data: {
         labels: sprints_end_dates,
         datasets: [{
+            lineTension: 0,
             label: "charge estimée",
             data: charge_estimee,
             backgroundColor: [
@@ -154,8 +208,9 @@ var myChart = new Chart(ctx, {
             ],
             borderWidth: 2
         },{
+            lineTension: 0,
             label: "charge réelle",
-            data: [project_difficulty],
+            data: charge_real,
             backgroundColor: [
                 'rgba(255,99,132,0)'
             ],

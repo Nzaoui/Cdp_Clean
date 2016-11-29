@@ -29,6 +29,9 @@ else{
     <link href="css/animate.css" rel="stylesheet" type="text/css" />
     <link href="css/admin.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/r/bs-3.3.5/jq-2.1.4,dt-1.10.8/datatables.min.css"/>
+	<style>
+	.navbar-collapse a { color: #FB5C4A}
+	</style>
   </head>
   <body class="light_theme  fixed_header left_nav_fixed">
     <div class="wrapper">
@@ -86,7 +89,7 @@ else{
              </section>
            </div>
          </div>
-         <nav class="navbar navbar-inverse" role="navigation">
+        <nav class="navbar navbar-default" role="navigation">
           <div class="navbar-header">
             <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
               <span class="icon-bar"></span>
@@ -95,7 +98,7 @@ else{
             </button>
           </div>
           <div class="collapse navbar-collapse">
-            <ul class="nav nav-justified">
+            <ul class="nav nav-pills nav-justified">
               <?php
               printf("<li class=\"active\"><a href=\"project.php?id=%d\">Accueil</a></li>",$project["id"]);
               printf("<li><a href=\"backLog.php?id=%d\">BackLog</a></li>",$project["id"]);
@@ -138,9 +141,10 @@ else{
                     <tbody>
                      <?php
                      $developers = get_developers($mysql,$_GET["id"]);
+                     $po = "<li class=\"fa fa-star\" title=\"Propriétaire\">";
                      while ($row = $developers->fetch_array(MYSQLI_ASSOC)){
                       printf("<tr>");
-                      printf ("<td data-title=\"Pseudo\">%s</td>",$row["login"]);
+                      printf ("<td data-title=\"Pseudo\">%s</li>%s</td>",($row["id"]==$project["owner"])?$po:"",$row["login"]);
                       printf ("<td data-title=\"Nom\">%s %s <a href=\"myprofil.php?id=%d\">(Consulter le profil)</a></td>",$row["last_name"],$row["first_name"],$row["id"]);
                       printf ("<td data-title=\"e-mail\">%s</td>",$row["email"]);
                       printf("</tr>");

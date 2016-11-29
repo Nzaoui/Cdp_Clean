@@ -31,7 +31,8 @@ else{
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/r/bs-3.3.5/jq-2.1.4,dt-1.10.8/datatables.min.css"/>
 	<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script> -->
 	<style>
-      textarea { resize: vertical; }
+    textarea { resize: vertical; }
+	.navbar-collapse a { color: #FB5C4A}
 	</style>
   </head>
   <body class="light_theme  fixed_header left_nav_fixed">
@@ -90,7 +91,7 @@ else{
              </section>
            </div>
          </div>
-         <nav class="navbar navbar-inverse" role="navigation">
+         <nav class="navbar navbar-default" role="navigation">
           <div class="navbar-header">
             <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
               <span class="icon-bar"></span>
@@ -99,15 +100,15 @@ else{
             </button>
           </div>
           <div class="collapse navbar-collapse">
-            <ul class="nav nav-justified">
+            <ul class="nav nav-pills nav-justified">
               <?php
-              printf("<li class=\"active\"><a href=\"project.php?id=%d\">Accueil</a></li>",$project["id"]);
+              printf("<li><a href=\"project.php?id=%d\">Accueil</a></li>",$project["id"]);
               printf("<li><a href=\"backLog.php?id=%d\">BackLog</a></li>",$project["id"]);
               printf("<li><a href=\"kanBan.php?id=%d\">KanBan</a></li>",$project["id"]);
               printf("<li><a href=\"burnDownChart.php?id=%d\">BurnDown Chart</a></li>",$project["id"]);
               printf("<li><a href=\"history.php?id=%d\">Historique</a></li>",$project["id"]);
               if(isset($_SESSION['id']) && check_user_work_on_project($mysql,$_SESSION['id'],$project["id"]))
-                printf("<li><a href=\"settings.php?id=%d\">Paramètres</a></li>",$project["id"]);
+                printf("<li class=\"active\"><a href=\"settings.php?id=%d\">Paramètres</a></li>",$project["id"]);
               ?>
             </ul>
 
@@ -142,7 +143,7 @@ else{
 								  <tbody>
 
 									<?php
-						 
+
 								  $mysql = connect();
 								  $id_project= $project["id"];
 								  $user = get_developers($mysql, $id_project);
@@ -170,25 +171,25 @@ else{
 										printf("</td>");
 										printf("</tr>");
 									}
-									
+
 								?>
 							   </tbody>
 							  </table>
 							  </form>
-	  
-							<?php  
-							
+
+							<?php
+
 							  if((isset($_POST['submit']))){
 								if($_POST['submit']){
 							  $mysql = connect();
 							  $project = $project["id"];
 							  $id_puser = $_POST['submit'];
-							  $result = add_user_to_project($mysql,$id_puser,$project); 
+							  $result = add_user_to_project($mysql,$id_puser,$project);
 							  	if($result == true){
 											echo "<div class=\"alert alert-success\">";
 											echo "<strong>Ajout avec Succes!</strong>";
 											echo '<META HTTP-EQUIV="Refresh" Content="0; URL=settings.php?id='.$_GET["id"].'">';
-											echo "</div>";	
+											echo "</div>";
 										}
 										else{
 											echo "<div class=\"alert alert-danger\">";
@@ -210,9 +211,20 @@ else{
 											echo "</div>";
 										}
 										else{
-											echo "<div class=\"alert alert-danger\">";
-											echo "<strong>Echec de supression!</strong>";
-											echo "</div>";
+											$user = get_project($mysql, $project);
+											while ($row = $user->fetch_array(MYSQLI_ASSOC)){
+											if($id_user == $row["owner"]){
+												echo "<div class=\"alert alert-danger\">";
+												echo "<strong>Echec de supression de PO!</strong>";
+												echo "</div>";
+											}
+											else {
+												echo "<div class=\"alert alert-danger\">";
+												echo "<strong>Echec de supression!</strong>";
+												echo "</div>";
+											}
+											}
+
 										}
 								  }
 							  }
@@ -228,7 +240,7 @@ else{
 						<div id="tache" class="tab-pane fade">
 							<?php include("task.php"); ?>
 						</div>
-					
+
 					</div>
 				</div>
 
@@ -252,7 +264,7 @@ else{
 <script type="text/javascript">
   $(document).ready(function() {
     $('#projects').DataTable({
-        "language": {        
+        "language": {
           "sProcessing":     "Traitement en cours...",
           "sSearch":         "Rechercher&nbsp;:",
             "sLengthMenu":     "Afficher _MENU_ &eacute;l&eacute;ments",
@@ -273,14 +285,14 @@ else{
             "sSortAscending":  ": activer pour trier la colonne par ordre croissant",
             "sSortDescending": ": activer pour trier la colonne par ordre d&eacute;croissant"
           }
-        }   
+        }
       });
     });
 </script>
 
 <script src="js/common-script.js"></script>
 <script src="js/jquery.slimscroll.min.js"></script>
-<script src="js/jPushMenu.js"></script> 
+<script src="js/jPushMenu.js"></script>
 <script src="js/side-chats.js"></script>
 
 <script>
@@ -290,6 +302,7 @@ $('#UpdateUSModal').on('show.bs.modal', function (event) {
 	var id_UserStory = button.data('id')
 	var priority = button.data('priority')
 	var difficulty = button.data('difficulty')
+  var color = button.data('uscolor')
 	var id_Sprint = button.data('sprint')
 	var achievement = button.data('achievement')
 	var commit = button.data('commit')
@@ -298,6 +311,7 @@ $('#UpdateUSModal').on('show.bs.modal', function (event) {
 	modal.find('.modal-body #update_id').val(id_UserStory)
 	modal.find('.modal-body #update_priority').val(priority)
 	modal.find('.modal-body #update_difficulty').val(difficulty)
+  modal.find('.modal-body #update_UScolor').val(color)
 	modal.find('.modal-body #update_sprint').val(id_Sprint)
 	//modal.find('.modal-body #update_sprint option[value='+id_sprint+']').attr('selected','selected')
 	modal.find('.modal-body #update_achievement').val(achievement)
